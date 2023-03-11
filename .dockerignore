@@ -1,0 +1,20 @@
+# Build artefacts
+**/bin/
+**/obj/
+**/out/
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDEs
+.idea
+.vscode
+
+# Docker
+.dockerignore
+Dockerfile
+
+# Documentation
+*.md
