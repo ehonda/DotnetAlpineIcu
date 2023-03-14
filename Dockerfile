@@ -1,5 +1,4 @@
-# Try runtimes: sdk, runtime, aspnet
-ARG runtimeImage=sdk
+ARG runtimeImage=ehonda/dotnet/sdk-icu-half
 
 FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine AS build
 
@@ -9,7 +8,7 @@ COPY . .
 
 RUN dotnet publish -c Release -o /src/publish
 
-FROM mcr.microsoft.com/dotnet/${runtimeImage}:7.0-alpine AS runtime
+FROM ${runtimeImage} AS runtime
 
 WORKDIR /app
 
