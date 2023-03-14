@@ -1,4 +1,4 @@
-ARG runtimeImage=ehonda/dotnet/sdk-icu-half
+ARG runtimeImage=dockerehonda/dotnet/sdk-icu-half
 
 FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine AS build
 

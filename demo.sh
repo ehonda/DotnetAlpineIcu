@@ -40,6 +40,10 @@ build_runtime_image() {
 
 # Builds all runtime images we need for the demo
 build_runtime_images() {
+    build_runtime_image sdk plain
+    build_runtime_image runtime plain
+    build_runtime_image aspnet plain
+
     build_runtime_image sdk icu-half
     build_runtime_image runtime icu-half
     build_runtime_image aspnet icu-half
@@ -92,6 +96,10 @@ build_application_image() {
 
 # Builds all application images we need for the demo
 build_application_images() {
+    build_application_image sdk plain
+    build_application_image runtime plain
+    build_application_image aspnet plain
+
     build_application_image sdk icu-half
     build_application_image runtime icu-half
     build_application_image aspnet icu-half
@@ -125,6 +133,10 @@ run_application_image() {
 }
 
 run_application_images() {
+    run_application_image sdk plain
+    run_application_image runtime plain
+    run_application_image aspnet plain
+
     run_application_image sdk icu-half
     run_application_image runtime icu-half
     run_application_image aspnet icu-half
@@ -137,8 +149,6 @@ run_application_images() {
     run_application_image runtime lc-all
     run_application_image aspnet lc-all
 }
-
-# TODO: no-icu version
 
 build_runtime_images
 build_application_images

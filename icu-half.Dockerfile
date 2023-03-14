@@ -1,6 +1,6 @@
 ARG runtimeImage=sdk
 
-FROM mcr.microsoft.com/dotnet/${runtimeImage}:7.0-alpine
+FROM dockerehonda/dotnet/${runtimeImage}-plain
 
 RUN apk --no-cache add icu-libs
 
