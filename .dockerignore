@@ -14,7 +14,10 @@
 
 # Docker
 .dockerignore
-Dockerfile
+*Dockerfile
 
 # Documentation
 *.md
+
+# Demo
+demo.sh

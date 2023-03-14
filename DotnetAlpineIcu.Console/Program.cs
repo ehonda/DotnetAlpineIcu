@@ -1,8 +1,11 @@
 ﻿using System.Globalization;
 
-var cultureName = args.Length is 0 ? "de" : args[0];
-var culture = CultureInfo.CreateSpecificCulture(cultureName);
+CheckGlobalization("en", 1.5, "1.5");
+CheckGlobalization("de", 1.5, "1,5");
 
-var numberString = 1.5.ToString(culture);
-
-Console.WriteLine($"{cultureName} ➡ {numberString}");
+void CheckGlobalization(string cultureName, double number, string expectedGlobalizedNumberRepresentation)
+{
+    var numberRepresentation = number.ToString(CultureInfo.CreateSpecificCulture(cultureName));
+    var successIndicator = numberRepresentation == expectedGlobalizedNumberRepresentation ? "✅" : "❌";
+    Console.WriteLine($"{cultureName} - {numberRepresentation} - {successIndicator}");
+}
