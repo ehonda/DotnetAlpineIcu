@@ -2,5 +2,7 @@ ARG runtimeImage=sdk
 
 FROM dockerehonda/dotnet/${runtimeImage}-icu-full
 
-ENV LC_ALL=en_US.UTF-8 \
-    LANG=en_US.UTF-8
+ARG locale=en_US.UTF-8
+
+ENV LC_ALL=${locale} \
+    LANG=${locale}

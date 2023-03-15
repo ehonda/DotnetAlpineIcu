@@ -4,36 +4,73 @@ set -eo pipefail
 
 # TODO: Put combinations of stuff to build in an array
 
+# Arguments
+#   1 Locale
+get_locale_suffix() {
+    local locale="$1"
+
+    if [[ -n "$locale" ]]; then
+        echo -n "-$locale" | tr '[:upper:]' '[:lower:]' | tr -c '[:alnum:]' -
+    fi
+}
+
 # Gets the name of the runtime image
 # Arguments
 #   1 Dotnet base image name
 #   2 Globalization support level
+#   3 (Optional) Extra locale argument
 get_runtime_image_name() {
     local dotnetBaseImageName="$1"
     local globalizationSupportLevel="$2"
+    local locale="$3"
+    
+    local localeSuffix
+    localeSuffix=$(get_locale_suffix "$locale")
 
-    echo dockerehonda/dotnet/"$dotnetBaseImageName"-"$globalizationSupportLevel"
+    echo dockerehonda/dotnet/"$dotnetBaseImageName"-"$globalizationSupportLevel""$localeSuffix"
+}
+
+# Arguments
+#   1 Locale
+get_locale_build_arg() {
+    local locale="$1"
+
+    if [[ -n "$locale" ]]; then
+        echo "--build-arg locale=$locale"
+    fi
 }
 
 # Builds a single runtime image
 # Arguments
 #   1 Dotnet base image name
 #   2 Globalization support level
+#   3 (Optional) Extra locale argument
 build_runtime_image() {
     local dotnetBaseImageName="$1"
     local globalizationSupportLevel="$2"
+    local locale="$3"
 
     local dockerfileName="$globalizationSupportLevel".Dockerfile
+
     local imageName
-    imageName=$(get_runtime_image_name "$dotnetBaseImageName" "$globalizationSupportLevel")
+    imageName=$(get_runtime_image_name "$dotnetBaseImageName" "$globalizationSupportLevel" "$locale")
+
+    local localeBuildArg
+    localeBuildArg=$(get_locale_build_arg "$locale")
 
     echo "Preparing runtime image $imageName"
+    
     # We don't need any context for those, wo we pipe in the dockerfile via STDIN
     # See: https://docs.docker.com/engine/reference/commandline/build/#build-with--
+    #
+    # shellcheck disable=SC2086
+    #   SC2086: Double quote to prevent globbing and word splitting.
+    #   Justification: We want word splitting for the extra build arg to work correctly
     docker image build \
             --quiet \
             --tag "$imageName" \
             --build-arg runtimeImage="$dotnetBaseImageName" \
+            $localeBuildArg \
             - < "$dockerfileName" \
         > /dev/null
 }
@@ -52,9 +89,13 @@ build_runtime_images() {
     build_runtime_image runtime icu-full
     build_runtime_image aspnet icu-full
 
-    build_runtime_image sdk lc-all
-    build_runtime_image runtime lc-all
-    build_runtime_image aspnet lc-all
+    build_runtime_image sdk lc-all en_US.UTF-8
+    build_runtime_image runtime lc-all en_US.UTF-8
+    build_runtime_image aspnet lc-all en_US.UTF-8
+
+    build_runtime_image sdk lc-all de_DE.UTF-8
+    build_runtime_image runtime lc-all de_DE.UTF-8
+    build_runtime_image aspnet lc-all de_DE.UTF-8
 
     # TODO: New section
     echo ""
@@ -64,26 +105,33 @@ build_runtime_images() {
 # Arguments
 #   1 Dotnet base image name
 #   2 Globalization support level
+#   3 (Optional) Extra locale argument
 get_application_image_name() {
     local dotnetBaseImageName="$1"
     local globalizationSupportLevel="$2"
+    local locale="$3"
 
-    echo dockerehonda/dotnet-alpine-icu-console/"$dotnetBaseImageName"-"$globalizationSupportLevel"
+    local localeSuffix
+    localeSuffix=$(get_locale_suffix "$locale")
+
+    echo dockerehonda/dotnet-alpine-icu-console/"$dotnetBaseImageName"-"$globalizationSupportLevel""$localeSuffix"
 }
 
 # Builds the application in a specific runtime
 # Arguments
 #   1 Dotnet base image name
 #   2 Globalization support level
+#   3 (Optional) Extra locale argument
 build_application_image() {
     local dotnetBaseImageName="$1"
     local globalizationSupportLevel="$2"
+    local locale="$3"
 
     local runtimeImageName
-    runtimeImageName=$(get_runtime_image_name "$dotnetBaseImageName" "$globalizationSupportLevel")
+    runtimeImageName=$(get_runtime_image_name "$dotnetBaseImageName" "$globalizationSupportLevel" "$locale")
 
     local applicationImageName
-    applicationImageName=$(get_application_image_name "$dotnetBaseImageName" "$globalizationSupportLevel")
+    applicationImageName=$(get_application_image_name "$dotnetBaseImageName" "$globalizationSupportLevel" "$locale")
 
     echo "Preparing application image $applicationImageName"
     docker image build \
@@ -108,9 +156,13 @@ build_application_images() {
     build_application_image runtime icu-full
     build_application_image aspnet icu-full
 
-    build_application_image sdk lc-all
-    build_application_image runtime lc-all
-    build_application_image aspnet lc-all
+    build_application_image sdk lc-all en_US.UTF-8
+    build_application_image runtime lc-all en_US.UTF-8
+    build_application_image aspnet lc-all en_US.UTF-8
+
+    build_application_image sdk lc-all de_DE.UTF-8
+    build_application_image runtime lc-all de_DE.UTF-8
+    build_application_image aspnet lc-all de_DE.UTF-8
 
     # TODO: New section
     echo ""
@@ -120,12 +172,14 @@ build_application_images() {
 # Arguments
 #   1 Dotnet base image name
 #   2 Globalization support level
+#   3 (Optional) Extra locale argument
 run_application_image() {
     local dotnetBaseImageName="$1"
     local globalizationSupportLevel="$2"
+    local locale="$3"
 
     local applicationImageName
-    applicationImageName=$(get_application_image_name "$dotnetBaseImageName" "$globalizationSupportLevel")
+    applicationImageName=$(get_application_image_name "$dotnetBaseImageName" "$globalizationSupportLevel" "$locale")
 
     echo "Running application image $applicationImageName"
     docker container run --rm "$applicationImageName"
@@ -145,9 +199,13 @@ run_application_images() {
     run_application_image runtime icu-full
     run_application_image aspnet icu-full
 
-    run_application_image sdk lc-all
-    run_application_image runtime lc-all
-    run_application_image aspnet lc-all
+    run_application_image sdk lc-all en_US.UTF-8
+    run_application_image runtime lc-all en_US.UTF-8
+    run_application_image aspnet lc-all en_US.UTF-8
+
+    run_application_image sdk lc-all de_DE.UTF-8
+    run_application_image runtime lc-all de_DE.UTF-8
+    run_application_image aspnet lc-all de_DE.UTF-8
 }
 
 build_runtime_images
