@@ -30,16 +30,6 @@ get_runtime_image_name() {
     echo dockerehonda/dotnet/"$dotnetBaseImageName"-"$globalizationSupportLevel""$localeSuffix"
 }
 
-# Arguments
-#   1 Locale
-get_locale_build_arg() {
-    local locale="$1"
-
-    if [[ -n "$locale" ]]; then
-        echo "--build-arg locale=$locale"
-    fi
-}
-
 # Builds a single runtime image
 # Arguments
 #   1 Dotnet base image name
@@ -55,22 +45,23 @@ build_runtime_image() {
     local imageName
     imageName=$(get_runtime_image_name "$dotnetBaseImageName" "$globalizationSupportLevel" "$locale")
 
-    local localeBuildArg
-    localeBuildArg=$(get_locale_build_arg "$locale")
+    # Build locale build arg if locale has a value
+    #   * See (for why we use this): https://www.shellcheck.net/wiki/SC2086
+    #   * Could be put into a function like this: https://stackoverflow.com/a/49971213
+    local localeBuildArg=()
+    if [[ -n "$locale" ]]; then
+        localeBuildArg=(--build-arg locale="$locale")
+    fi
 
     echo "Preparing runtime image $imageName"
     
     # We don't need any context for those, wo we pipe in the dockerfile via STDIN
     # See: https://docs.docker.com/engine/reference/commandline/build/#build-with--
-    #
-    # shellcheck disable=SC2086
-    #   SC2086: Double quote to prevent globbing and word splitting.
-    #   Justification: We want word splitting for the extra build arg to work correctly
     docker image build \
             --quiet \
             --tag "$imageName" \
             --build-arg runtimeImage="$dotnetBaseImageName" \
-            $localeBuildArg \
+            "${localeBuildArg[@]}" \
             - < "$dockerfileName" \
         > /dev/null
 }
